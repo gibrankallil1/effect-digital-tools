@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Geral — Effect Digital</title>
+<title>Dashboard Geral â Effect Digital</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -56,7 +56,7 @@ tr:hover td{background:#faf9f7}
 <body>
 <div class="hdr">
   <div>
-    <div class="hdr-title">Painel de Saude — Effect Digital</div>
+    <div class="hdr-title">Painel de Saude â Effect Digital</div>
     <div class="hdr-sub" id="updated">Carregando...</div>
   </div>
   <button class="btn" onclick="loadData()">Atualizar</button>
@@ -260,7 +260,7 @@ function loadData(){
   ss('loading','block');ss('content','none');ss('setup','none');
   document.getElementById('err').style.display='none';
   var db=DB.replace(/-/g,'');
-  fetch('https://api.notion.com/v1/databases/'+db+'/query',{method:'POST'headers:{'Authorization':'Bearer '+TOKEN,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({page_size:100})})
+  fetch('https://api.notion.com/v1/databases/'+db+'/query',{method:'POST', headers:{'Authorization':'Bearer '+TOKEN,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({page_size:100})})
   .then(function(r){return r.json();})
   .then(function(data){
     if(!data.results)throw new Error(JSON.stringify(data).substring(0,200));
@@ -271,14 +271,14 @@ function loadData(){
       function gt(k){return pr[k]&&pr[k].title&&pr[k].title[0]?pr[k].title[0].plain_text:(pr[k]&&pr[k].rich_text&&pr[k].rich_text[0]?pr[k].rich_text[0].plain_text:null);}
       function gf(k){return pr[k]&&pr[k].formula&&pr[k].formula.number!==undefined?pr[k].formula.number:null;}
       var res=gn('1. Resultados (1-5)');
-      var com=gn('2. Comunicação do G.T. (1-5)');
-      var nps=gn('4. Satisfação Geral / NPS (1-5)');
+      var com=gn('2. ComunicaÃ§Ã£o do G.T. (1-5)');
+      var nps=gn('4. SatisfaÃ§Ã£o Geral / NPS (1-5)');
       var eng=gn('5. Engajamento do Cliente (1-5)');
-      var fin=gn('6. Situação Financeira (1-5)');
-      var sf=gf('Score Final (média)');
+      var fin=gn('6. SituaÃ§Ã£o Financeira (1-5)');
+      var sf=gf('Score Final (mÃ©dia)');
       var vals=[res,com,nps,eng,fin].filter(function(v){return v!==null;});
       var sc=sf!==null?sf:(vals.length?vals.reduce(function(a,b){return a+b;},0)/vals.length:null);
-      return{name:gt('Cliente')||'Sem nome',gestor:gs('Gestor Responsável'),hs:gs('Health Score'),score:sc?parseFloat(sc.toFixed(2)):null,res:res,com:com,nps:nps,eng:eng,fin:fin};
+      return{name:gt('Cliente')||'Sem nome',gestor:gs('Gestor ResponsÃ¡vel'),hs:gs('Health Score'),score:sc?parseFloat(sc.toFixed(2)):null,res:res,com:com,nps:nps,eng:eng,fin:fin};
     });
 
     var total=ALL.length;
