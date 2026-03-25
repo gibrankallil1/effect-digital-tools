@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Saúde — Effect Digital</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a1a;font-size:14px}.header{background:#fff;border-bottom:1px solid #e8e6e0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}.header-title{font-size:16px;font-weight:600}.btn-refresh{font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer}.main{padding:16px 24px;max-width:1100px;margin:0 auto}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.mcard{background:#fff;border-radius:8px;border:1px solid #e8e6e0;padding:14px 16px}.mcard-label{font-size:11px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}.mcard-val{font-size:26px;font-weight:600;line-height:1}.mcard-sub{font-size:11px;color:#888;margin-top:5px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.card{background:#fff;border-radius:8px;border:1px solid #e8e6e0;padding:16px}.card-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}.bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px}.bar-label{font-size:12px;color:#555;width:110px;flex-shrink:0}.bar-track{flex:1;height:8px;background:#f0ede8;border-radius:4px;overflow:hidden}.bar-fill{height:100%;border-radius:4px}.bar-val{font-size:12px;font-weight:600;min-width:24px;text-align:right}.g-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0ede8}.g-row:last-child{border-bottom:none}.g-score{font-size:14px;font-weight:600}.g-count{font-size:11px;color:#888}.filters{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.fbtn{font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;border:1px solid #ddd;background:#f8f7f4;color:#555}.fbtn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}table{width:100%;border-collapse:collapse;font-size:12px}th{text-align:left;padding:6px 8px;color:#888;font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid #e8e6e0}td{padding:9px 8px;border-bottom:1px solid #f0ede8}tr:hover td{background:#faf9f7}.pill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px}.pill-g{background:#eaf3de;color:#27500a}.pill-y{background:#faeeda;color:#633806}.pill-r{background:#fcebeb;color:#791f1f}.pill-d{background:#f1efe8;color:#444}.loading{text-align:center;padding:48px;color:#888;font-size:15px}.error-msg{background:#fcebeb;border-radius:8px;padding:14px;color:#791f1f;font-size:13px;margin-bottom:12px}.empty{text-align:center;padding:24px;color:#aaa;font-size:13px}.updated{font-size:11px;color:#aaa}.setup-box{background:#fff;border:1px solid #e8e6e0;border-radius:8px;padding:24px;max-width:480px;margin:48px auto}.setup-box h2{font-size:15px;font-weight:600;margin-bottom:12px}.setup-box p{font-size:13px;color:#555;margin-bottom:16px}.setup-box input{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;margin-bottom:10px}.setup-box button{width:100%;padding:9px;background:#1a1a1a;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer}@media(max-width:640px){.metrics{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}.main{padding:12px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="header-title">Painel de Saude - Effect Digital</div>
+    <div class="updated" id="updated-at">Carregando...</div>
+  </div>
+  <button class="btn-refresh" onclick="loadData()">Atualizar</button>
+</div>
+<div class="main">
+  <div id="setup-screen" style="display:none">
+    <div class="setup-box">
+      <h2>Configurar acesso ao Notion</h2>
+      <p>Cole o token de integracao do Notion e o ID do banco de Health Check para conectar o painel.</p>
+      <input id="inp-token" placeholder="Token Notion (ntn_...)" type="text">
+      <input id="inp-db" placeholder="Database ID (sem tracos)" type="text">
+      <button onclick="saveConfig()">Conectar</button>
+    </div>
+  </div>
+  <div id="error-msg" style="display:none" class="error-msg"></div>
+  <div id="loading" class="loading">Conectando ao Notion...</div>
+  <div id="content" style="display:none">
+    <div class="metrics">
+      <div class="mcard"><div class="mcard-label">Total clientes</div><div class="mcard-val" id="m-total">-</div><div class="mcard-sub">com health check</div></div>
+      <div class="mcard"><div class="mcard-label">Score medio</div><div class="mcard-val" id="m-score">-</div><div class="mcard-sub">de 5.0 maximo</div></div>
+      <div class="mcard"><div class="mcard-label">Saudaveis</div><div class="mcard-val" id="m-healthy" style="color:#3b6d11">-</div><div class="mcard-sub" id="m-healthy-pct">-</div></div>
+      <div class="mcard"><div class="mcard-label">Em risco / churn</div><div class="mcard-val" id="m-risk" style="color:#a32d2d">-</div><div class="mcard-sub" id="m-risk-pct">-</div></div>
+    </div>
+    <div class="row2">
+      <div class="card"><div class="card-title">Por status</div><div id="bars"></div></div>
+      <div class="card"><div class="card-title">Por gestor</div><div id="gestores"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Clientes - detalhamento</div>
+      <div class="filters">
+        <button class="fbtn active" onclick="setFilter('all',this)">Todos</button>
+        <button class="fbtn" onclick="setFilter('saudavel',this)">Saudaveis</button>
+        <button class="fbtn" onclick="setFilter('atencao',this)">Atencao</button>
+        <button class="fbtn" onclick="setFilter('risco',this)">Risco</button>
+        <button class="fbtn" onclick="setFilter('churn',this)">Churn</button>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Status</th><th>Cliente</th><th>Gestor</th><th>Score</th><th>Resultado</th><th>Comunicacao</th><th>NPS</th><th>Engajamento</th><th>Financeiro</th></tr></thead><tbody id="tbody"></tbody></table></div>
+    </div>
+  </div>
+</div>
+<script>
+var TOKEN='',DB='',all=[],cf='all';
+function getConfig(){var p=new URLSearchParams(window.location.search);TOKEN=p.get('t')||localStorage.getItem('nt')||'';DB=p.get('db')||localStorage.getItem('ndb')||'13ba0953c32f445aa7e815db89512bd3';}
+function saveConfig(){TOKEN=document.getElementById('inp-token').value.trim();DB=document.getElementById('inp-db').value.trim();localStorage.setItem('nt',TOKEN);localStorage.setItem('ndb',DB);document.getElementById('setup-screen').style.display='none';loadData();}
+function sc(s){if(!s)return'pill-d';if(s.indexOf('Saud')>-1)return'pill-g';if(s.indexOf('Aten')>-1)return'pill-y';if(s.indexOf('Risco')>-1||s.indexOf('Churn')>-1)return'pill-r';return'pill-d';}
+function sl(s){if(!s)return'-';if(s.indexOf('Saud')>-1)return'Saudavel';if(s.indexOf('Aten')>-1)return'Atencao';if(s.indexOf('Risco')>-1)return'Risco';if(s.indexOf('Churn')>-1)return'Churn';return'-';}
+function col(v){if(v===null)return'#aaa';if(v>=4)return'#3b6d11';if(v>=3)return'#ba7517';return'#a32d2d';}
+function setFilter(f,b){cf=f;document.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('active')});b.classList.add('active');rt();}
+function fm(c){if(cf==='all')return true;if(cf==='saudavel')return c.hs&&c.hs.indexOf('Saud')>-1;if(cf==='atencao')return c.hs&&c.hs.indexOf('Aten')>-1;if(cf==='risco')return c.hs&&c.hs.indexOf('Risco')>-1;if(cf==='churn')return c.hs&&c.hs.indexOf('Churn')>-1;return true;}
+function rt(){var d=all.filter(fm).sort(function(a,b){return(a.score||99)-(b.score||99)});var tb=document.getElementById('tbody');if(!d.length){tb.innerHTML='<tr><td colspan="9" class="empty">Nenhum cliente</td></tr>';return;}tb.innerHTML=d.map(function(c){return'<tr><td><span class="pill '+sc(c.hs)+'">'+sl(c.hs)+'</span></td><td style="font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.name+'</td><td style="color:#555">'+(c.gestor||'-')+'</td><td style="font-weight:600;color:'+col(c.score)+'">'+(c.score!==null?c.score.toFixed(1):'-')+'</td><td>'+(c.res!==null?c.res.toFixed(1):'-')+'</td><td>'+(c.com!==null?c.com.toFixed(1):'-')+'</td><td>'+(c.nps!==null?c.nps.toFixed(1):'-')+'</td><td>'+(c.eng!==null?c.eng.toFixed(1):'-')+'</td><td>'+(c.fin!==null?c.fin.toFixed(1):'-')+'</td></tr>';}).join('');}
+function loadData(){
+  getConfig();
+  if(!TOKEN){document.getElementById('loading').style.display='none';document.getElementById('setup-screen').style.display='block';return;}
+  document.getElementById('loading').style.display='block';
+  document.getElementById('content').style.display='none';
+  document.getElementById('error-msg').style.display='none';
+  document.getElementById('setup-screen').style.display='none';
+  var db=DB.replace(/-/g,'');
+  fetch('https://api.notion.com/v1/databases/'+db+'/query',{method:'POST',headers:{'Authorization':'Bearer '+TOKEN,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({page_size:100})}).then(function(r){return r.json();}).then(function(data){
+    if(!data.results)throw new Error(JSON.stringify(data).substring(0,200));
+    if(!data.results.length){document.getElementById('loading').style.display='none';document.getElementById('error-msg').textContent='Sem dados. Preencha a Planilha de Health Check no Notion.';document.getElementById('error-msg').style.display='block';document.getElementById('content').style.display='block';return;}
+    all=data.results.map(function(p){var pr=p.properties;function gn(k){return pr[k]&&pr[k].number!==undefined?pr[k].number:null;}function gs(k){return pr[k]&&pr[k].select?pr[k].select.name:null;}function gt(k){return pr[k]&&pr[k].title&&pr[k].title[0]?pr[k].title[0].plain_text:(pr[k]&&pr[k].rich_text&&pr[k].rich_text[0]?pr[k].rich_text[0].plain_text:null);}function gf(k){return pr[k]&&pr[k].formula&&pr[k].formula.number!==undefined?pr[k].formula.number:null;}var res=gn('1. Resultados (1-5)');var com=gn('2. Comunicacao do G.T. (1-5)');var nps=gn('4. Satisfacao Geral / NPS (1-5)');var eng=gn('5. Engajamento do Cliente (1-5)');var fin=gn('6. Situacao Financeira (1-5)');var sf=gf('Score Final (media)');var vals=[res,com,nps,eng,fin].filter(function(v){return v!==null;});var sc=sf!==null?sf:(vals.length?vals.reduce(function(a,b){return a+b;},0)/vals.length:null);return{name:gt('Cliente')||'Sem nome',gestor:gs('Gestor Responsavel'),hs:gs('Health Score'),score:sc,res:res,com:com,nps:nps,eng:eng,fin:fin};});
+    var total=all.length;var scores=all.filter(function(c){return c.score!==null;}).map(function(c){return c.score;});var avg=scores.length?scores.reduce(function(a,b){return a+b;},0)/scores.length:null;var healthy=all.filter(function(c){return c.hs&&c.hs.indexOf('Saud')>-1;}).length;var risk=all.filter(function(c){return c.hs&&(c.hs.indexOf('Risco')>-1||c.hs.indexOf('Churn')>-1);}).length;
+    document.getElementById('m-total').textContent=total;
+    document.getElementById('m-score').textContent=avg!==null?avg.toFixed(1):'-';
+    document.getElementById('m-healthy').textContent=healthy;
+    document.getElementById('m-healthy-pct').textContent=total?Math.round(healthy/total*100)+'% da base':'-';
+    document.getElementById('m-risk').textContent=risk;
+    document.getElementById('m-risk-pct').textContent=total?Math.round(risk/total*100)+'% da base':'-';
+    var sts=[{l:'Saudavel',k:'Saud',c:'#639922'},{l:'Atencao',k:'Aten',c:'#ba7517'},{l:'Risco',k:'Risco',c:'#e24b4a'},{l:'Churn iminente',k:'Churn',c:'#888'}];
+    document.getElementById('bars').innerHTML=sts.map(function(s){var n=all.filter(function(c){return c.hs&&c.hs.indexOf(s.k)>-1;}).length;var pct=total?Math.round(n/total*100):0;return'<div class="bar-wrap"><div class="bar-label">'+s.l+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+s.c+'"></div></div><div class="bar-val">'+n+'</div></div>';}).join('');
+    var gm={};all.forEach(function(c){var g=c.gestor||'Sem gestor';if(!gm[g])gm[g]={total:0,scores:[]};gm[g].total++;if(c.score!==null)gm[g].scores.push(c.score);});
+    document.getElementById('gestores').innerHTML=Object.entries(gm).sort(function(a,b){return b[1].total-a[1].total;}).map(function(e){var g=e[0],d=e[1];var a=d.scores.length?d.scores.reduce(function(x,y){return x+y;},0)/d.scores.length:null;return'<div class="g-row"><span>'+g+'</span><div style="display:flex;align-items:center;gap:10px"><span class="g-count">'+d.total+' clientes</span>'+(a!==null?'<span class="g-score" style="color:'+col(a)+'">'+a.toFixed(1)+'</span>':'')+'</div></div>';}).join('');
+    rt();
+    var now=new Date();document.getElementById('updated-at').textContent='Atualizado: '+now.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('loading').style.display='none';document.getElementById('content').style.display='block';
+  }).catch(function(e){document.getElementById('loading').style.display='none';document.getElementById('error-msg').textContent=e.message;document.getElementById('error-msg').style.display='block';document.getElementById('content').style.display='block';});
+}
+loadData();
+</script>
+</body>
+</html>
